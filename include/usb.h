@@ -50,13 +50,13 @@
 #define USB_MAXCHILDREN			8	/* This is arbitrary */
 #define USB_MAX_HUB			16
 
-#define USB_CNTL_TIMEOUT 100 /* 100ms timeout */
+#define USB_CNTL_TIMEOUT (CONFIG_SYS_HZ / 10) /* 100ms timeout */
 
 /*
  * This is the timeout to allow for submitting an urb in ms. We allow more
  * time for a BULK device to react - some are slow.
  */
-#define USB_TIMEOUT_MS(pipe) (usb_pipebulk(pipe) ? 5000 : 1000)
+#define USB_TIMEOUT_MS(pipe) (usb_pipebulk(pipe) ? (5 * CONFIG_SYS_HZ) : (1 * CONFIG_SYS_HZ))
 
 /* device request (setup) */
 struct devrequest {

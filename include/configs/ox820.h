@@ -149,6 +149,16 @@
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_AUTO_COMPLETE
 
+/* usb */
+#define CONFIG_USB_MAX_CONTROLLER_COUNT	1
+#define CONFIG_USB_EHCI
+#define CONFIG_EHCI_IS_TDI
+/* #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x3F */
+#define CONFIG_USB_PLLB_CLK
+#define CONFIG_USB_EHCI_OXNAS
+#define CONFIG_USB_STORAGE
+#define CONFIG_CMD_USB
+
 /* cmds */
 #include <config_cmd_default.h>
 

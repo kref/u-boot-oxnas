@@ -1267,7 +1267,7 @@ destroy_int_queue(struct usb_device *dev, struct int_queue *queue)
 	periodic_schedules--;
 
 	struct QH *cur = &ctrl->periodic_queue;
-	timeout = get_timer(0) + 500; /* abort after 500ms */
+	timeout = get_timer(0) + (CONFIG_SYS_HZ / 2); /* abort after 500ms */
 	while (!(cur->qh_link & QH_LINK_TERMINATE)) {
 		debug("considering %p, with qh_link %x\n", cur, cur->qh_link);
 		if (NEXT_QH(cur) == queue->first) {

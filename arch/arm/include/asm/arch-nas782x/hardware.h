@@ -2,6 +2,7 @@
 #define _NAS782X_HARDWARE_H
 
 /* Core addresses */
+#define USB_HOST_BASE		0x40200000
 #define MACA_BASE		0x40400000
 #define MACB_BASE		0x40800000
 #define MAC_BASE		MACA_BASE
