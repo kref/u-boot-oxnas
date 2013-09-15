@@ -37,10 +37,10 @@ void reset_cpu(ulong addr)
 		BIT(SYS_CTRL_RST_USBHSPHYB ) |
 		BIT(SYS_CTRL_RST_USBDEV    );
 
-	reg_set_bit(SYS_CTRL_RST_SET_CTRL, value);
+	writel(value, SYS_CTRL_RST_SET_CTRL);
 
 	// Release reset to cores as per power on defaults
-	reg_set_bit(SYS_CTRL_RST_CLR_CTRL, BIT(SYS_CTRL_RST_GPIO));
+	writel(BIT(SYS_CTRL_RST_GPIO), SYS_CTRL_RST_CLR_CTRL);
 
 	// Disable clocks to cores as per power-on defaults - must leave DDR
 	// related clocks enabled otherwise we'll stop rather abruptly.
@@ -60,7 +60,7 @@ void reset_cpu(ulong addr)
 		BIT(SYS_CTRL_CLK_REF600)	|
 		BIT(SYS_CTRL_CLK_USBDEV);
 
-	reg_set_bit(SYS_CTRL_CLK_CLR_CTRL, value);
+	writel(value, SYS_CTRL_CLK_CLR_CTRL);
 
 	// Enable clocks to cores as per power-on defaults
 
@@ -88,5 +88,5 @@ void reset_cpu(ulong addr)
 		BIT(SYS_CTRL_RST_ARM0) |
 		BIT(SYS_CTRL_RST_ARM1);
 
-	reg_set_bit(SYS_CTRL_RST_SET_CTRL, value);
+	writel(value, SYS_CTRL_RST_SET_CTRL);
 }
