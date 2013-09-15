@@ -83,6 +83,7 @@ LIBS-$(CONFIG_SPL_ETH_SUPPORT) += drivers/net/libnet.o
 LIBS-$(CONFIG_SPL_ETH_SUPPORT) += drivers/net/phy/libphy.o
 LIBS-$(CONFIG_SPL_MUSB_NEW_SUPPORT) += drivers/usb/musb-new/libusb_musb-new.o
 LIBS-$(CONFIG_SPL_USBETH_SUPPORT) += drivers/usb/gadget/libusb_gadget.o
+LIBS-$(CONFIG_SPL_BLOCK_SUPPORT) += drivers/block/libblock.o
 
 ifneq ($(CONFIG_AM33XX)$(CONFIG_OMAP34XX)$(CONFIG_OMAP44XX)$(CONFIG_OMAP54XX)$(CONFIG_TI814X),)
 LIBS-y += $(CPUDIR)/omap-common/libomap-common.o
@@ -172,8 +173,14 @@ $(obj)$(BOARD)-spl.bin: $(obj)u-boot-spl.bin
 		$(obj)u-boot-spl.bin $(obj)$(BOARD)-spl.bin
 endif
 
+ifdef CONFIG_OX820
+$(obj)u-boot-spl.bin: $(obj)u-boot-spl
+	$(OBJCOPY) $(OBJCFLAGS) -O binary $< $@
+	$(OBJTREE)/tools/mkox820crc $@
+else
 $(obj)u-boot-spl.bin:	$(obj)u-boot-spl
 	$(OBJCOPY) $(OBJCFLAGS) -O binary $< $@
+endif
 
 GEN_UBOOT = \
 	cd $(obj) && $(LD) $(LDFLAGS) $(LDFLAGS_$(@F)) $(__START) \

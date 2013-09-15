@@ -1,6 +1,10 @@
 #
-# (C) Copyright 2000-2007
+# (C) Copyright 2000-2006
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+#
+# (C) Copyright 2004
+# ARM Ltd.
+# Philippe Robin, <philippe.robin@arm.com>
 #
 # See file CREDITS for list of people who contributed to this
 # project.
@@ -12,7 +16,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -23,33 +27,23 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	:= $(obj)libblock.o
+LIB	= $(obj)lib$(BOARD).o
 
-COBJS-$(CONFIG_SCSI_AHCI) += ahci.o
-COBJS-$(CONFIG_ATA_PIIX) += ata_piix.o
-COBJS-$(CONFIG_DWC_AHSATA) += dwc_ahsata.o
-COBJS-$(CONFIG_FSL_SATA) += fsl_sata.o
-COBJS-$(CONFIG_IDE_FTIDE020) += ftide020.o
-COBJS-$(CONFIG_LIBATA) += libata.o
-COBJS-$(CONFIG_MVSATA_IDE) += mvsata_ide.o
-COBJS-$(CONFIG_MX51_PATA) += mxc_ata.o
-COBJS-$(CONFIG_PATA_BFIN) += pata_bfin.o
-COBJS-$(CONFIG_SATA_DWC) += sata_dwc.o
-COBJS-$(CONFIG_SATA_SIL3114) += sata_sil3114.o
-COBJS-$(CONFIG_SATA_SIL) += sata_sil.o
-COBJS-$(CONFIG_IDE_SIL680) += sil680.o
-COBJS-$(CONFIG_SCSI_SYM53C8XX) += sym53c8xx.o
-COBJS-$(CONFIG_SYSTEMACE) += systemace.o
-COBJS-$(CONFIG_IDE_PLX) += plxsata_ide.o synopsis.o
+COBJS-y	+= ox820.o
 
-COBJS	:= $(COBJS-y)
-SRCS	:= $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(COBJS))
+ifeq ($(CONFIG_SPL_BUILD),y)
+SOBJS-y	+= spl_start.o
+COBJS-y	+= ddr.o
+else
+SOBJS-y	+= lowlevel_init.o
+endif
 
-all:	$(LIB)
+SRCS	:= $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
+COBJS	:= $(addprefix $(obj),$(COBJS-y))
+SOBJS	:= $(addprefix $(obj),$(SOBJS-y))
 
-$(LIB):	$(obj).depend $(OBJS)
-	$(call cmd_link_o_target, $(OBJS))
+$(LIB):	$(obj).depend $(COBJS) $(SOBJS)
+	$(call cmd_link_o_target, $(COBJS) $(SOBJS))
 
 #########################################################################
 

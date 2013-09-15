@@ -75,6 +75,7 @@ BIN_FILES-$(CONFIG_NETCONSOLE) += ncb$(SFX)
 BIN_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1$(SFX)
 BIN_FILES-$(CONFIG_KIRKWOOD) += kwboot$(SFX)
 BIN_FILES-y += proftool(SFX)
+BIN_FILES-$(CONFIG_OX820) += mkox820crc$(SFX)
 
 # Source files which exist outside the tools directory
 EXT_OBJ_FILES-$(CONFIG_BUILD_ENVCRC) += common/env_embedded.o
@@ -239,6 +240,10 @@ $(obj)mkimage$(SFX):	$(obj)aisimage.o \
 	$(HOSTSTRIP) $@
 
 $(obj)mk$(BOARD)spl$(SFX):	$(obj)mkexynosspl.o
+	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
+	$(HOSTSTRIP) $@
+
+$(obj)mkox820crc$(SFX):	$(obj)mkox820crc.c $(obj)crc32.o
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
 	$(HOSTSTRIP) $@
 

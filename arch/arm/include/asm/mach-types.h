@@ -212,6 +212,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_EDB9307A             1128
 #define MACH_TYPE_OMAP_3430SDP         1138
 #define MACH_TYPE_VSTMS                1140
+#define MACH_TYPE_OXNAS                1152
 #define MACH_TYPE_MICRO9M              1169
 #define MACH_TYPE_BUG                  1179
 #define MACH_TYPE_AT91SAM9263EK        1202

@@ -151,6 +151,14 @@ static int calc_divisor (NS16550_t port)
 	}
 #endif
 
+#ifdef CONFIG_OX820
+	{
+		/* with additional 3 bit fractional */
+		u32 div = (CONFIG_SYS_NS16550_CLK + gd->baudrate) / (gd->baudrate * 2);
+		port->reg9 = (div & 7) << 5;
+		return (div >> 3);
+	}
+#endif
 #define MODE_X_DIV 16
 	/* Compute divisor value. Normally, we should simply return:
 	 *   CONFIG_SYS_NS16550_CLK) / MODE_X_DIV / gd->baudrate
