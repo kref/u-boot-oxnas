@@ -208,8 +208,11 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 #endif
 #ifdef CONFIG_SPL_BLOCK_SUPPORT
 	case BOOT_DEVICE_BLOCK:
+	{
+		extern void spl_block_load_image(void);
 		spl_block_load_image();
 		break;
+	}
 #endif
 #ifdef CONFIG_SPL_ETH_SUPPORT
 	case BOOT_DEVICE_CPGMAC:

@@ -1,6 +1,7 @@
 #include <common.h>
 #include <spl.h>
 #include <phy.h>
+#include <netdev.h>
 #include <ide.h>
 #include <nand.h>
 #include <asm/arch/spl.h>
@@ -59,7 +60,9 @@ extern void init_ddr(int mhz);
 void board_inithw(void)
 {
 	int plla_freq;
+#ifdef DEBUG
 	int i;
+#endif	/* DEBUG */
 
 	timer_init();
 #ifdef DEBUG
@@ -146,7 +149,7 @@ void nand_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 	if (cmd == NAND_CMD_NONE)
 		return;
 
-	addr = chip->IO_ADDR_W;
+	addr = (u32)chip->IO_ADDR_W;
 	addr &= ~(BIT(NAND_ALE_ADDR_PIN) | BIT(NAND_CLE_ADDR_PIN));
 
 	if (ctrl & NAND_CLE)
@@ -154,7 +157,7 @@ void nand_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 	else
 		addr |= BIT(NAND_ALE_ADDR_PIN);
 
-	chip->IO_ADDR_W = addr;
+	chip->IO_ADDR_W = (void __iomem *)addr;
 	writeb(cmd, addr);
 }
 

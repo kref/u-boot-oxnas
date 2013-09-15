@@ -80,7 +80,7 @@ static void plla_configure(int outdiv, int refdiv, int fbdiv, int bwadj,
 int plla_set_config(int mhz)
 {
 	int index = (mhz - PLL_LOW_FREQ) / PLL_FREQ_STEP;
-	PLL_CONFIG *cfg;
+	const PLL_CONFIG *cfg;
 
 	if (index < 0 || index > ARRAY_SIZE(C_PLL_CONFIG)) {
 		debug("Freq %d MHz out of range, default to lowest\n", mhz);

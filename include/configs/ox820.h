@@ -7,6 +7,9 @@
 #define CONFIG_ARM1136
 #define CONFIG_OX820
 
+/* make cmd_ide.c quiet when compile */
+#define __io
+
 #include <asm/arch/cpu.h>		/* get chip and board defs */
 
 /*#define CONFIG_ARCH_CPU_INIT*/

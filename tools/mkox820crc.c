@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 extern uint32_t crc32(uint32_t, const unsigned char *, unsigned int);
 
@@ -50,6 +51,7 @@ int main(int argc, char **argv)
 	int status;
 	int unsigned crc;
 	int file_length;
+	int len;
 
 	struct stat file_stat;
 
@@ -111,8 +113,10 @@ int main(int argc, char **argv)
 		printf("failed to rewind\n");
 		return 1;
 	}
-	write(in_file, &img_header, sizeof(img_header));
-	write(in_file, executable, file_length);
+	len = write(in_file, &img_header, sizeof(img_header));
+	assert(len == sizeof(img_header));
+	len = write(in_file, executable, file_length);
+	assert(len == file_length);
 	close(in_file);
 
 	return 0;

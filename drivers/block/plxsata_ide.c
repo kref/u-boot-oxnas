@@ -623,7 +623,7 @@ static u32 encode_final_eot(oxnas_dma_device_settings_t* src_settings,
 	return encoded;
 }
 
-static void dma_start_write(ulong* buffer, int num_bytes)
+static void dma_start_write(const ulong* buffer, int num_bytes)
 {
 	// Assemble complete memory settings
 	oxnas_dma_device_settings_t mem_settings = oxnas_ram_dma_settings;

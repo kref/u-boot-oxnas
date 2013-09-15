@@ -29,8 +29,6 @@
 #include <version.h>
 #include <ide.h>
 
-//#undef CONFIG_PARTITIONS
-//#include <part.h>
 inline void  init_part (block_dev_desc_t *dev_desc) {}
 inline void dev_print(block_dev_desc_t *dev_desc) {}
 
@@ -87,16 +85,14 @@ static int ide_load_image_raw_os(int device)
 void spl_block_load_image(void)
 {
 	int err;
-	u32 boot_mode;
 
 	ide_init();
 
 #ifdef CONFIG_SPL_OS_BOOT
 	if (spl_start_uboot() || ide_load_image_raw_os(0))
 #endif
-		err = ide_load_image_raw(0,
-					 CONFIG_SYS_BLOCK_RAW_MODE_U_BOOT_SECTOR);
-
+	err = ide_load_image_raw(0,
+				 CONFIG_SYS_BLOCK_RAW_MODE_U_BOOT_SECTOR);
 
 	if (err)
 		hang();
