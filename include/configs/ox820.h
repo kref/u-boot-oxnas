@@ -108,13 +108,9 @@
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 /* memtest works on */
 #define CONFIG_SYS_LOAD_ADDR		(CONFIG_SYS_SDRAM_BASE)
-#define CONFIG_BOOTCOMMAND		"run ideboot"
+/* #define CONFIG_BOOTCOMMAND		"run ideboot" */
 
 #define CONFIG_EXTRA_ENV_SETTINGS	\
-	"ideboot=" \
-                "setenv bootargs root=ubi0!rootfs rootfstype=ubif ${console};" \
-                "fatload ide 0 60000000 uImage;" \
-                "bootm\0" \
 	"updboot=" \
 				"bootp;" \
 				"tftp 60000000 u-boot.img;" \
