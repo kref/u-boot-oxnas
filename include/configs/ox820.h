@@ -1,8 +1,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_MTD_DEBUG
-#define CONFIG_MTD_DEBUG_VERBOSE 10000
 /* High Level Configuration Options */
 #define CONFIG_ARM1136
 #define CONFIG_OX820
@@ -61,7 +59,10 @@
 #define CONFIG_SYS_NAND_BASE		STATIC_CS0_BASE
 #define NAND_CLE_ADDR_PIN		19
 #define NAND_ALE_ADDR_PIN		18
-
+#define MTDPARTS_DEFAULT		"mtdparts=41000000.nand:" \
+						"14m(boot)," \
+                                                "-(data)"
+#define MTDIDS_DEFAULT			"nand0=41000000.nand"
 
 /* net */
 #define CONFIG_DESIGNWARE_ETH
@@ -71,27 +72,66 @@
 #define CONFIG_MII
 #define CONFIG_CMD_MII
 #define CONFIG_PHYLIB
-#define CONFIG_PHY_REALTEK
 #define CONFIG_ETHADDR			00:25:31:01:66:5F
 
 /* spl */
+#if defined(CONFIG_BOOT_FROM_NAND) || defined(CONFIG_BOOT_FROM_SATA)
 #define CONFIG_SPL
-#define CONFIG_SPL_BOARD_INIT
 #define CONFIG_SPL_FRAMEWORK
 #define CONFIG_SPL_LIBCOMMON_SUPPORT
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_LIBGENERIC_SUPPORT
-#define CONFIG_SPL_TEXT_BASE		0x50000000
-#define CONFIG_SPL_MAX_SIZE		(32 * 1024)
-#define CONFIG_SPL_STACK		(CONFIG_SRAM_BASE + (48 * 1024))
-/*#define CONFIG_SPL_DISPLAY_PRINT*/
+#define CONFIG_SPL_TEXT_BASE			0x50000000
+#define CONFIG_SPL_STACK			(CONFIG_SRAM_BASE + (48 * 1024))
+#define CONFIG_SPL_DISPLAY_PRINT
+#endif
+
+#if defined(CONFIG_BOOT_FROM_NAND)
+#define CONFIG_SPL_NAND_SUPPORT
+#define BOOT_DEVICE_TYPE			"NAND"
+#define BOOT_DEVICE_NAND			0xfeedbacc
+#define CONFIG_SPL_BOOT_DEVICE			BOOT_DEVICE_NAND
+#define CONFIG_SPL_NAND_SIMPLE
+#define CONFIG_SPL_NAND_ECC
+#define CONFIG_SPL_NAND_SOFTECC
+#define CONFIG_SYS_NAND_ECCSIZE			512
+#define CONFIG_SYS_NAND_ECCBYTES		6
+#define CONFIG_SYS_NAND_ECCPOS			{40, 41, 42, 43, 44, 45, 46, 47, \
+						48, 49, 50, 51, 52, 53, 54, 55, \
+						56, 57, 58, 59, 60, 61, 62, 63}
+#define CONFIG_SYS_NAND_PAGE_SIZE		2048
+#define CONFIG_SYS_NAND_OOBSIZE			64
+#define CONFIG_SYS_NAND_BLOCK_SIZE		(128 * 1024)
+#define CONFIG_SYS_NAND_BAD_BLOCK_POS		0
+/* pages per erase block */
+#define CONFIG_SYS_NAND_PAGE_COUNT		(CONFIG_SYS_NAND_BLOCK_SIZE / CONFIG_SYS_NAND_PAGE_SIZE)
+/* nand spl use 1 erase block, and use bit to byte encode for reliability */
+#define CONFIG_SPL_MAX_SIZE			(128 * 1024 / 8)
+#define CONFIG_SYS_NAND_U_BOOT_OFFS		0x00040000
+/* spl kernel load is not enabled */
+#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS		0x00200000
+#define CONFIG_CMD_SPL_NAND_OFS			0
+#define CONFIG_CMD_SPL_WRITE_SIZE		1024
+#define CONFIG_SYS_SPL_ARGS_ADDR		(CONFIG_SYS_SDRAM_BASE + 0x100)
+/* CONFIG_BOOT_FROM_NAND end */
+
+#elif defined(CONFIG_BOOT_FROM_SATA)
 #define CONFIG_SPL_BLOCK_SUPPORT
-#define BOOT_DEVICE_BLOCK		860202
+#define BOOT_DEVICE_TYPE				"SATA"
+#define BOOT_DEVICE_BLOCK				860202
+#define CONFIG_SPL_BOOT_DEVICE				BOOT_DEVICE_BLOCK
+#define CONFIG_SPL_MAX_SIZE				(32 * 1024)
 #define CONFIG_SYS_BLOCK_RAW_MODE_U_BOOT_SECTOR		1024
+/* spl kernel load is not enabled */
 #define CONFIG_SYS_BLOCK_RAW_MODE_KERNEL_SECTOR		4096
 #define CONFIG_SYS_BLOCK_RAW_MODE_ARGS_SECTOR		0
-#define CONFIG_SYS_BLOCK_RAW_MODE_ARGS_SECTORS		1
+#define CONFIG_SYS_BLOCK_RAW_MODE_ARGS_SECTORS		(1024 / 512)
 #define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
+/* CONFIG_BOOT_FROM_SATA end */
+
+#else
+/* generic, no spl support */
+#endif
 
 /* boot */
 #define CONFIG_IDENT_STRING		" for OXNAS"
@@ -116,9 +156,21 @@
 				"tftp 60000000 u-boot.img;" \
 				"ide write 60000000 400 400\0" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
-	"bootargs=" CONFIG_DEFAULT_CONSOLE
+	"bootargs=" CONFIG_DEFAULT_CONSOLE \
+	"mtdids=" MTDIDS_DEFAULT "\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 
 /* env */
+#if defined(CONFIG_BOOT_FROM_NAND)
+#define CONFIG_ENV_IS_IN_NAND
+#define CONFIG_ENV_OFFSET		0x000C0000
+#define CONFIG_ENV_SIZE			0x00020000
+#define CONFIG_ENV_OFFSET_REDUND	0x00100000
+#define CONFIG_ENV_SIZE_REDUND		0x00020000
+#define CONFIG_ENV_RANGE		(CONFIG_ENV_SIZE * 2)
+/* CONFIG_BOOT_FROM_NAND end */
+
+#elif defined(CONFIG_BOOT_FROM_SATA)
 #define CONFIG_ENV_IS_IN_FAT
 #define CONFIG_START_IDE
 #define FAT_ENV_INTERFACE 		"ide"
@@ -126,6 +178,15 @@
 #define FAT_ENV_PART			1
 #define FAT_ENV_FILE			"u-boot.env"
 #define CONFIG_ENV_SIZE			(16 * 1024)
+/* CONFIG_BOOT_FROM_SATA end */
+
+#else
+/* generic */
+#define CONFIG_ENV_IS_NOWHERE
+#define CONFIG_ENV_SIZE			(16 * 1024)
+
+#endif
+
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
 
@@ -156,25 +217,21 @@
 #define CONFIG_CMD_USB
 
 /* cmds */
+#define CONFIG_SYS_NO_FLASH
 #include <config_cmd_default.h>
 
 #define CONFIG_CMD_SAVEENV
 
 #define CONFIG_CMD_NET
+#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_NFS
 #define CONFIG_CMD_PING
-#define CONFIG_CMD_ELF
-#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_PXE
 
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_NAND_YAFFS
 #define CONFIG_CMD_MTDPARTS
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_UBIFS
-
-#define CONFIG_SYS_NO_FLASH
-#undef CONFIG_CMD_IMLS
 
 #define CONFIG_CMD_IDE
 #define CONFIG_CMD_FAT
@@ -182,6 +239,7 @@
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_EXT4
 #define CONFIG_CMD_EXT4_WRITE
+
 #define CONFIG_CMD_ZIP
 #define CONFIG_CMD_UNZIP
 #define CONFIG_CMD_TIME
@@ -192,6 +250,7 @@
 #define CONFIG_CMD_INI
 #define CONFIG_CMD_GETTIME
 #define CONFIG_CMD_BOOTMENU
+#define CONFIG_CMD_ELF
 
 #define CONFIG_DOS_PARTITION
 
@@ -199,13 +258,14 @@
 #define CONFIG_MTD_DEVICE
 /* for CONFIG_CMD_UBI */
 #define CONFIG_MTD_PARTITIONS
-/* for CONFIG_CMD_UBIFS */
+/* for CONFIG_CMD_UBI */
 #define CONFIG_RBTREE
-/* optional, for CONFIG_CMD_BOOTM */
 
+/* optional, for CONFIG_CMD_BOOTM & required by CONFIG_CMD_UBIFS */
 #define CONFIG_LZO
 #define CONFIG_LZMA
 #define CONFIG_BZIP2
+
 /* for CONFIG_CMD_ZIP */
 #define CONFIG_GZIP_COMPRESSED
 /* for CONFIG_CMD_MD5SUM */
@@ -214,7 +274,7 @@
 /* enable CONFIG_CMD_HASH's verification feature */
 #define CONFIG_HASH_VERIFY
 #define CONFIG_REGEX
-/* for CONFIG_CMD_BOOTMENU */
+/* for CONFIG_CMD_BOOTMENU & CONFIG_CMD_PXE */
 #define CONFIG_MENU
 
 #endif	/* __CONFIG_H */

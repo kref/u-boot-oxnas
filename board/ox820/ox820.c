@@ -111,11 +111,13 @@ void board_init_f(ulong dummy)
 
 u32 spl_boot_device(void)
 {
-	return BOOT_DEVICE_BLOCK;
+	return CONFIG_SPL_BOOT_DEVICE;
 }
 
-void spl_board_init(void)
+void spl_display_print()
 {
+	/* print a hint, so that we will not use the wrong SPL by mistake */
+	puts("  Boot device: " BOOT_DEVICE_TYPE "\n" );
 }
 
 void lowlevel_init(void)
@@ -143,30 +145,61 @@ int board_early_init_f(void)
 
 void nand_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *chip = mtd->priv;
-	u32 addr;
+	struct nand_chip *this = mtd->priv;
+	unsigned long nandaddr = (unsigned long) this->IO_ADDR_W;
 
-	if (cmd == NAND_CMD_NONE)
-		return;
+	if (ctrl & NAND_CTRL_CHANGE) {
+		nandaddr &= ~(BIT(NAND_ALE_ADDR_PIN) | BIT(NAND_CLE_ADDR_PIN));
+		if (ctrl & NAND_CLE)
+			nandaddr |= BIT(NAND_CLE_ADDR_PIN);
+		else if (ctrl & NAND_ALE)
+			nandaddr |= BIT(NAND_ALE_ADDR_PIN);
+		this->IO_ADDR_W = (void __iomem *) nandaddr;
+	}
 
-	addr = (u32)chip->IO_ADDR_W;
-	addr &= ~(BIT(NAND_ALE_ADDR_PIN) | BIT(NAND_CLE_ADDR_PIN));
-
-	if (ctrl & NAND_CLE)
-		addr |= BIT(NAND_CLE_ADDR_PIN);
-	else
-		addr |= BIT(NAND_ALE_ADDR_PIN);
-
-	chip->IO_ADDR_W = (void __iomem *)addr;
-	writeb(cmd, addr);
+	if (cmd != NAND_CMD_NONE)
+		writeb(cmd, (void __iomem *) nandaddr);
 }
 
-int nand_block_good(struct mtd_info *mtd, loff_t ofs, int getchip)
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_BOOT_FROM_NAND)
+
+int nand_dev_ready(struct mtd_info *mtd)
 {
-	return 0;
+	struct nand_chip *chip = mtd->priv;
+
+	udelay(chip->chip_delay);
+
+	return 1;
 }
 
-int board_nand_init(struct nand_chip *nand)
+void nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+{
+	int i;
+	struct nand_chip *chip = mtd->priv;
+
+	for (i = 0; i < len; i++)
+		buf[i] = readb(chip->IO_ADDR_R);
+}
+
+void nand_dev_reset(struct nand_chip *chip)
+{
+	writeb(NAND_CMD_RESET, chip->IO_ADDR_W + BIT(NAND_CLE_ADDR_PIN));
+	udelay(chip->chip_delay);
+	writeb(NAND_CMD_STATUS, chip->IO_ADDR_W + BIT(NAND_CLE_ADDR_PIN));
+	while (!(readb(chip->IO_ADDR_R) & NAND_STATUS_READY)) {
+		;
+	}
+}
+
+#else
+
+#define nand_dev_reset(chip)	/* framework will reset the chip anyway */
+#define nand_read_buf		NULL /* framework will provide a default one */
+#define nand_dev_ready		NULL /* dev_ready is optional */
+
+#endif
+
+int board_nand_init(struct nand_chip *chip)
 {
 	/* Block reset Static core */
 	reset_block(SYS_CTRL_RST_STATIC, 1);
@@ -201,16 +234,13 @@ int board_nand_init(struct nand_chip *nand)
 			STATIC_BUS_WIDTH16,
 		STATIC_CTL_BANK0);
 
-/*	writel(0x4f1f3f3f, STATIC_CTL_BANK0);
+	chip->cmd_ctrl = nand_hwcontrol;
+	chip->ecc.mode = NAND_ECC_SOFT;
+	chip->chip_delay = 30;
+	chip->dev_ready = nand_dev_ready;
+	chip->read_buf = nand_read_buf;
 
-	// reset command
-	writeb(0xff, BIT(NAND_CLE_ADDR_PIN));
-	udelay(500);*/
-
-	nand->cmd_ctrl = nand_hwcontrol;
-	nand->block_bad = nand_block_good;
-	nand->ecc.mode = NAND_ECC_SOFT;
-	nand->options |= NAND_SKIP_BBTSCAN;
+	nand_dev_reset(chip);
 
 	return 0;
 }
@@ -219,6 +249,8 @@ int board_init(void)
 {
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
 	gd->flags = 0;
+
+	/* assume uart is already initialized by SPL */
 
 #if defined(CONFIG_START_IDE)
 	puts("IDE:   ");
