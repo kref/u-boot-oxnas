@@ -304,7 +304,7 @@ static void tftp_complete(void)
 	if (time_start > 0) {
 		puts("\n\t ");	/* Line up with "Loading: " */
 		print_size(NetBootFileXferSize /
-			time_start * 1000, "/s");
+			time_start * CONFIG_SYS_HZ, "/s");
 	}
 	puts("\ndone\n");
 	net_set_state(NETLOOP_SUCCESS);
