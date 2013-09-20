@@ -86,9 +86,9 @@ void board_inithw(void)
 
 #ifdef DEBUG
 	if(test_memory(CONFIG_SYS_SDRAM_BASE)) {
-		printf("memory test failed\n");
+		puts("memory test failed\n");
 	} else {
-		printf("memory test done\n");
+		puts("memory test done\n");
 	}
 #endif /* DEBUG */
 }
