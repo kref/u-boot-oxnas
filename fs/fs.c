@@ -279,6 +279,7 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	time = get_timer(0);
 	len_read = fs_read(filename, addr, pos, bytes);
 	time = get_timer(time);
+	time /= CONFIG_SYS_HZ / 1000;
 	if (len_read <= 0)
 		return 1;
 
