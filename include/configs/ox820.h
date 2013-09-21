@@ -211,7 +211,7 @@
 #define CONFIG_USB_EHCI
 #define CONFIG_EHCI_IS_TDI
 /* #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x3F */
-#define CONFIG_USB_PLLB_CLK
+/* #define CONFIG_USB_PLLB_CLK */
 #define CONFIG_USB_EHCI_OXNAS
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_USB
@@ -221,6 +221,9 @@
 #include <config_cmd_default.h>
 
 #define CONFIG_CMD_SAVEENV
+#define CONFIG_CMD_ASKENV
+#define CONFIG_CMD_GREPENV
+#define CONFIG_CMD_ENV_FLAGS
 
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_DHCP
