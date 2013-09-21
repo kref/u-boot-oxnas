@@ -248,7 +248,6 @@ int board_nand_init(struct nand_chip *chip)
 int board_init(void)
 {
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
-	gd->flags = 0;
 
 	/* assume uart is already initialized by SPL */
 
