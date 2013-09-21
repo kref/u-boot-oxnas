@@ -18,25 +18,7 @@ static struct ehci_hcor *ghcor;
 
 static int start_oxnas_usb_ehci(void)
 {
-	u32 input_polarity = 0;
-	u32 output_polarity = 0;
-	u32 power_polarity_default = readl(SYS_CTRL_USBHSMPH_CTRL);
-	u32 usb_hs_ifg;
-
-	power_polarity_default = readl(SYS_CTRL_USBHSMPH_CTRL);
-
-	power_polarity_default &= ~0xf;
-	usb_hs_ifg = (power_polarity_default >> 25) & 0x3f;
-	usb_hs_ifg += 12;
-	power_polarity_default &= ~(0x3f << 25);
-	power_polarity_default |= (usb_hs_ifg << 25);
-	power_polarity_default |= (input_polarity & 0x3);
-	power_polarity_default |= (output_polarity & ( 0x3 <<2));
-
-	writel(power_polarity_default, SYS_CTRL_USBHSMPH_CTRL);
-
 #ifdef CONFIG_USB_PLLB_CLK
-
 		reset_block(SYS_CTRL_RST_PLLB, 0);
 		enable_clock(SYS_CTRL_CLK_REF600);
 
@@ -44,9 +26,7 @@ static int start_oxnas_usb_ehci(void)
 				SEC_CTRL_PLLB_CTRL0);
 		/* 600MHz pllb divider for 12MHz */
 		writel(PLLB_DIV_INT(50) | PLLB_DIV_FRAC(0), SEC_CTRL_PLLB_DIV_CTRL);
-
 #else
-		/* according to hrm, ref300 is from sata phy, seems that IS the problem */
 		/* ref 300 divider for 12MHz */
 		writel(REF300_DIV_INT(25) | REF300_DIV_FRAC(0), SYS_CTRL_REF300_DIV);
 #endif
