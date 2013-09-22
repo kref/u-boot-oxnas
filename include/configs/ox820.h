@@ -52,6 +52,7 @@
 #define CONFIG_SYS_IDE_MAXDEVICE	1
 #define CONFIG_SYS_IDE_MAXBUS		1
 #define CONFIG_IDE_PREINIT
+#define CONFIG_LBA48
 
 /* nand */
 #define CONFIG_NAND
