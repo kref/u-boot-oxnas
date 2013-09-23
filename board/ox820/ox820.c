@@ -114,7 +114,7 @@ u32 spl_boot_device(void)
 	return CONFIG_SPL_BOOT_DEVICE;
 }
 
-void spl_display_print()
+void spl_display_print(void)
 {
 	/* print a hint, so that we will not use the wrong SPL by mistake */
 	puts("  Boot device: " BOOT_DEVICE_TYPE "\n" );
