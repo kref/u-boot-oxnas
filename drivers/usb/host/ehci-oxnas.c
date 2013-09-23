@@ -19,16 +19,16 @@ static struct ehci_hcor *ghcor;
 static int start_oxnas_usb_ehci(void)
 {
 #ifdef CONFIG_USB_PLLB_CLK
-		reset_block(SYS_CTRL_RST_PLLB, 0);
-		enable_clock(SYS_CTRL_CLK_REF600);
+	reset_block(SYS_CTRL_RST_PLLB, 0);
+	enable_clock(SYS_CTRL_CLK_REF600);
 
-		writel((1 << PLLB_ENSAT) | (1 << PLLB_OUTDIV) | (2 << PLLB_REFDIV),
-				SEC_CTRL_PLLB_CTRL0);
-		/* 600MHz pllb divider for 12MHz */
-		writel(PLLB_DIV_INT(50) | PLLB_DIV_FRAC(0), SEC_CTRL_PLLB_DIV_CTRL);
+	writel((1 << PLLB_ENSAT) | (1 << PLLB_OUTDIV) | (2 << PLLB_REFDIV),
+			SEC_CTRL_PLLB_CTRL0);
+	/* 600MHz pllb divider for 12MHz */
+	writel(PLLB_DIV_INT(50) | PLLB_DIV_FRAC(0), SEC_CTRL_PLLB_DIV_CTRL);
 #else
-		/* ref 300 divider for 12MHz */
-		writel(REF300_DIV_INT(25) | REF300_DIV_FRAC(0), SYS_CTRL_REF300_DIV);
+	/* ref 300 divider for 12MHz */
+	writel(REF300_DIV_INT(25) | REF300_DIV_FRAC(0), SYS_CTRL_REF300_DIV);
 #endif
 
 	/* Ensure the USB block is properly reset */

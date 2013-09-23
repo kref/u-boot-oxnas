@@ -858,8 +858,8 @@ static int phy_reset(int device)
 	int loops = 0;
 
 	workaround5458();
-	scr_write(device, 0x60, 0x2988);
-	scr_write(device, 0x70, 0x55629);
+	scr_write(device, (0x60 - SATA_STD_ASYNC_REGS_OFF) / 4, 0x2988);
+	scr_write(device, (0x70 - SATA_STD_ASYNC_REGS_OFF) / 4, 0x55629);
 
 #ifdef FPGA
 	/* The FPGA thinks it can do 3G when infact only 1.5G is possible, so limit
