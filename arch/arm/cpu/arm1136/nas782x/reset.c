@@ -6,7 +6,6 @@
 void reset_cpu(ulong addr)
 {
 	u32 value;
-	printf("Resetting...\n");
 
 	// Assert reset to cores as per power on defaults
 	// Don't touch the DDR interface as things will come to an impromptu stop
