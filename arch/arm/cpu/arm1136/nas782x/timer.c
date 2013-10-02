@@ -40,6 +40,8 @@
 #define READ_TIMER	(TIMER_LOAD_VAL - readl(CONFIG_SYS_TIMERBASE + TIMER_CURR)) \
 			/ (TIMER_CLOCK / CONFIG_SYS_HZ)
 
+#define READ_TIMER_HW	(TIMER_LOAD_VAL - readl(CONFIG_SYS_TIMERBASE + TIMER_CURR))
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int timer_init (void)
@@ -73,26 +75,21 @@ void __udelay (unsigned long usec)
 {
 	ulong tmo, tmp;
 
-	if (usec >= 1000) {		/* if "big" number, spread normalization to seconds */
+	if (usec > 100000) {		/* if "big" number, spread normalization to seconds */
 		tmo = usec / 1000;	/* start to normalize for usec to ticks per sec */
 		tmo *= CONFIG_SYS_HZ;	/* find number of "ticks" to wait to achieve target */
 		tmo /= 1000;		/* finish normalize. */
-	} else {			/* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CONFIG_SYS_HZ;
-		tmo /= (1000*1000);
+
+		tmp = get_timer (0);		/* get current timestamp */
+		while (get_timer (tmp) < tmo)/* loop till event */
+			/*NOP*/;
+	} else {			/* else small number, convert to hw ticks */
+		tmo = usec * (TIMER_CLOCK / 1000) / 1000;
+		/* timeout is no more than 0.1s, and the hw timer will roll over at most once */
+		tmp = READ_TIMER_HW;
+		while (((READ_TIMER_HW -tmp) & TIMER_LOAD_VAL) < tmo)/* loop till event */
+			/*NOP*/;
 	}
-	if (tmo <= 0)
-		tmo = 1;
-	tmp = get_timer (0);		/* get current timestamp */
-	if ((tmo + tmp + 1) < tmp) {	/* if setting this forward will roll */
-					/* time stamp, then reset time */
-		gd->arch.lastinc = READ_TIMER;	/* capture incrementer value */
-		gd->arch.tbl = 0;			/* start time stamp */
-	} else {
-		tmo	+= tmp;		/* else, set advancing stamp wake up time */
-	}
-	while (get_timer_masked () < tmo)/* loop till event */
-		/*NOP*/;
 }
 
 ulong get_timer_masked (void)
@@ -111,28 +108,6 @@ ulong get_timer_masked (void)
 	return gd->arch.tbl;
 }
 
-/* waits specified delay value and resets timestamp */
-void udelay_masked (unsigned long usec)
-{
-	ulong tmo;
-	ulong endtime;
-	signed long diff;
-
-	if (usec >= 1000) {			/* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;		/* start to normalize for usec to ticks per sec */
-		tmo *= CONFIG_SYS_HZ;			/* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;			/* finish normalize. */
-	} else {					/* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CONFIG_SYS_HZ;
-		tmo /= (1000*1000);
-	}
-	endtime = get_timer_masked () + tmo;
-
-	do {
-		ulong now = get_timer_masked ();
-		diff = endtime - now;
-	} while (diff >= 0);
-}
 
 /*
  * This function is derived from PowerPC code (read timebase as long long).
