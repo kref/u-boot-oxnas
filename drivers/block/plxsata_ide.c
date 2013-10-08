@@ -427,9 +427,7 @@ void ide_outb(int device, int port, unsigned char val)
 		break;
 	case ATA_PORT_DEVICE:
 		wr_sata_orb1[device] &= ~(0xFFUL << SATA_DEVICE_BIT);
-		wr_sata_orb1[device] |= ((val & 0xf0) << SATA_DEVICE_BIT);
-		wr_sata_orb3[device] &= ~(0xFFUL << SATA_HOB_LBAH_BIT);
-		wr_sata_orb3[device] |= ((val & 0x0f) << SATA_HOB_LBAH_BIT);
+		wr_sata_orb1[device] |= (val << SATA_DEVICE_BIT);
 		send_regs = SEND_SIMPLE;
 		break;
 	case ATA_PORT_COMMAND:
