@@ -79,6 +79,9 @@
 #define SATA_HOB_LBAH_BIT 24
 #define SATA_DEVICE_BIT  24
 #define SATA_NSECT_BIT   0
+#define SATA_HOB_NSECT_BIT   8
+#define SATA_LBA32_BIT       0
+#define SATA_LBA40_BIT       8
 #define SATA_FEATURE_BIT 16
 #define SATA_COMMAND_BIT 24
 #define SATA_CTL_BIT     24
@@ -230,6 +233,13 @@ static u32 wr_sata_orb1[2] = { 0, 0 };
 static u32 wr_sata_orb2[2] = { 0, 0 };
 static u32 wr_sata_orb3[2] = { 0, 0 };
 static u32 wr_sata_orb4[2] = { 0, 0 };
+
+#ifdef CONFIG_LBA48
+/* need keeping a record of NSECT LBAL LBAM LBAH ide_outb values for lba48 support */
+#define OUT_HISTORY_BASE	ATA_PORT_NSECT
+#define OUT_HISTORY_MAX		ATA_PORT_LBAH
+static unsigned char out_history[2][OUT_HISTORY_MAX - OUT_HISTORY_BASE + 1] = {};
+#endif
 
 static oxnas_dma_device_settings_t oxnas_sata_dma_settings = { .address_ =
 	SATA_DATA_BASE, .fifo_size_ = 16, .dreq_ = OXNAS_DMA_DREQ_SATA,
@@ -393,6 +403,13 @@ void ide_outb(int device, int port, unsigned char val)
 
 	device_select(device);
 
+#ifdef CONFIG_LBA48
+	if (port >= OUT_HISTORY_BASE && port <= OUT_HISTORY_MAX) {
+		out_history[0][port - OUT_HISTORY_BASE] =
+			out_history[1][port - OUT_HISTORY_BASE];
+		out_history[1][port - OUT_HISTORY_BASE] = val;
+	}
+#endif
 	send_method_t send_regs = SEND_NONE;
 	switch (port) {
 	case ATA_PORT_CTL:
@@ -434,6 +451,27 @@ void ide_outb(int device, int port, unsigned char val)
 		wr_sata_orb2[device] &= ~(0xFFUL << SATA_COMMAND_BIT);
 		wr_sata_orb2[device] |= (val << SATA_COMMAND_BIT);
 		send_regs = SEND_CMD;
+#ifdef CONFIG_LBA48
+		if (val == ATA_CMD_READ_EXT || val == ATA_CMD_WRITE_EXT)
+		{
+			/* fill high bytes of LBA48 && NSECT */
+			wr_sata_orb2[device] &= ~(0xFFUL << SATA_HOB_NSECT_BIT);
+			wr_sata_orb2[device] |=
+				(out_history[0][ATA_PORT_NSECT - OUT_HISTORY_BASE] << SATA_HOB_NSECT_BIT);
+
+			wr_sata_orb3[device] &= ~(0xFFUL << SATA_HOB_LBAH_BIT);
+			wr_sata_orb3[device] |=
+				(out_history[0][ATA_PORT_LBAL - OUT_HISTORY_BASE] << SATA_HOB_LBAH_BIT);
+
+			wr_sata_orb4[device] &= ~(0xFFUL << SATA_LBA32_BIT);
+			wr_sata_orb4[device] |=
+				(out_history[0][ATA_PORT_LBAM - OUT_HISTORY_BASE] << SATA_LBA32_BIT);
+
+			wr_sata_orb4[device] &= ~(0xFFUL << SATA_LBA40_BIT);
+			wr_sata_orb4[device] |=
+				(out_history[0][ATA_PORT_LBAH - OUT_HISTORY_BASE] << SATA_LBA40_BIT);
+		}
+#endif
 		break;
 	default:
 		printf("ide_outb() Unknown port = %d\n", port);
