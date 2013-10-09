@@ -150,7 +150,16 @@
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 /* memtest works on */
 #define CONFIG_SYS_LOAD_ADDR		(CONFIG_SYS_SDRAM_BASE)
-/* #define CONFIG_BOOTCOMMAND		"run ideboot" */
+#define CONFIG_SYS_AUTOLOAD		"no"
+
+#define CONFIG_BOOTARGS			"console=ttyS0,115200n8 root=/dev/sda2 ubi.mtd=data,512"
+#define CONFIG_BOOTCOMMAND		"run ideboot"
+#define CONFIG_BOOT_RETRY_TIME		-1
+#define CONFIG_RESET_TO_RETRY		60
+#define CONFIG_PREBOOT			"run safeboot"
+
+#define CONFIG_NETCONSOLE
+#define CONFIG_IPADDR			192.168.0.100
 
 #define CONFIG_EXTRA_ENV_SETTINGS	\
 	"updboot=" \
@@ -161,6 +170,23 @@
 	"bootargs=" CONFIG_DEFAULT_CONSOLE \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
+	"safeboot=" \
+			"setexpr.b keypressed '*44200005' '&' 1;" \
+			"if test $keypressed = 0;" \
+				"then run netcon;" \
+			"fi" "\0" \
+	"serialcon=" \
+			"echo switch to serial console;" \
+			"setenv stderr serial;" \
+			"setenv stdin serial;" \
+			"setenv stdout serial;" \
+			"echo switch to serial console" "\0" \
+	"netcon=" \
+			"echo switch to net console;" \
+			"setenv stderr nc;" \
+			"setenv stdin nc;" \
+			"setenv stdout nc;" \
+			"echo switch to net console" "\0"
 
 /* env */
 #if defined(CONFIG_BOOT_FROM_NAND)
