@@ -123,12 +123,36 @@
 #define BOOT_DEVICE_BLOCK				860202
 #define CONFIG_SPL_BOOT_DEVICE				BOOT_DEVICE_BLOCK
 #define CONFIG_SPL_MAX_SIZE				(32 * 1024)
+#define CONFIG_SPL_LIBDISK_SUPPORT
+#define CONFIG_SPL_BLOCKDEV_INTERFACE			"ide"
+#define CONFIG_SPL_BLOCKDEV_ID				0
+
+#ifdef CONFIG_BOOT_FROM_FAT /* u-boot in fat partition */
+
+#define CONFIG_SPL_FAT_SUPPORT
+#define CONFIG_SPL_BSS_DRAM_START			0x65000000
+#define CONFIG_SPL_MALLOC_START				0x66000000
+#ifdef CONFIG_SPL_BUILD
+#define USE_DL_PREFIX	/* rename malloc free etc, so we can override them */
+#endif
+
+#define CONFIG_BLOCKDEV_FAT_BOOT_PARTITION		1 /* first partition */
+#define CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME		"u-boot.img" /* u-boot file name */
+/* spl kernel load is not enabled */
+#define CONFIG_SPL_FAT_LOAD_ARGS_NAME			"bootargs.bin" /* boot parameters */
+#define CONFIG_SPL_FAT_LOAD_KERNEL_NAME			"uImage" /* kernel */
+#define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
+
+#else /* u-boot in raw sectors */
+
 #define CONFIG_SYS_BLOCK_RAW_MODE_U_BOOT_SECTOR		1024
 /* spl kernel load is not enabled */
 #define CONFIG_SYS_BLOCK_RAW_MODE_KERNEL_SECTOR		4096
 #define CONFIG_SYS_BLOCK_RAW_MODE_ARGS_SECTOR		0
 #define CONFIG_SYS_BLOCK_RAW_MODE_ARGS_SECTORS		(1024 / 512)
 #define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
+
+#endif /* CONFIG_BOOT_FROM_FAT */
 /* CONFIG_BOOT_FROM_SATA end */
 
 #else
@@ -241,7 +265,9 @@
 /* #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x3F */
 #define CONFIG_USB_PLLB_CLK
 #define CONFIG_USB_EHCI_OXNAS
+#ifndef CONFIG_SPL_BUILD
 #define CONFIG_USB_STORAGE
+#endif
 #define CONFIG_CMD_USB
 
 /* cmds */

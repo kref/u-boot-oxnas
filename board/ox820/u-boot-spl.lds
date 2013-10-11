@@ -70,6 +70,17 @@ SECTIONS
 
 	_end = .;
 
+#ifdef CONFIG_SPL_BSS_DRAM_START
+	. = CONFIG_SPL_BSS_DRAM_START;
+	.bss.dram : {
+		__bss_dram_start = .;
+#ifdef CONFIG_SPL_FAT_SUPPORT
+		fs/fat/libfat.o(.bss*)
+#endif /* CONFIG_SPL_FAT_SUPPORT */
+		__bss_dram_end = .;
+	}
+#endif /* CONFIG_SPL_BSS_DRAM_START */
+
 	.bss __rel_dyn_start (OVERLAY) : {
 		__bss_start = .;
 		*(.bss*)

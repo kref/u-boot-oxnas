@@ -91,6 +91,11 @@ void board_inithw(void)
 		puts("memory test done\n");
 	}
 #endif /* DEBUG */
+#ifdef CONFIG_SPL_BSS_DRAM_START
+	extern char __bss_dram_start;
+	extern char __bss_dram_end;
+	memset(&__bss_dram_start, 0, &__bss_dram_end - &__bss_dram_start);
+#endif
 }
 
 void board_init_f(ulong dummy)
@@ -113,6 +118,13 @@ u32 spl_boot_device(void)
 {
 	return CONFIG_SPL_BOOT_DEVICE;
 }
+
+#ifdef CONFIG_SPL_BLOCK_SUPPORT
+void spl_block_device_init(void)
+{
+	ide_init();
+}
+#endif
 
 void spl_display_print(void)
 {
