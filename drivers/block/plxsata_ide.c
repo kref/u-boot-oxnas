@@ -947,6 +947,63 @@ static int wait_FIS(int device)
 	return status;
 }
 
+
+#define SATA_PHY_ASIC_STAT  (0x44900000)
+#define SATA_PHY_ASIC_DATA  (0x44900004)
+
+/**
+ * initialise functions and macros for ASIC implementation
+ */
+#define PH_GAIN         2
+#define FR_GAIN         3
+#define PH_GAIN_OFFSET  6
+#define FR_GAIN_OFFSET  8
+#define PH_GAIN_MASK  (0x3 << PH_GAIN_OFFSET)
+#define FR_GAIN_MASK  (0x3 << FR_GAIN_OFFSET)
+
+#define CR_READ_ENABLE  (1<<16)
+#define CR_WRITE_ENABLE (1<<17)
+#define CR_CAP_DATA     (1<<18)
+
+static void wait_cr_ack(void)
+{
+	while ((readl(SATA_PHY_ASIC_STAT) >> 16) & 0x1f)
+		/* wait for an ack bit to be set */;
+}
+
+static unsigned short read_cr(unsigned short address)
+{
+	writel(address, SATA_PHY_ASIC_STAT);
+	wait_cr_ack();
+	writel(CR_READ_ENABLE, SATA_PHY_ASIC_DATA);
+	wait_cr_ack();
+	return readl(SATA_PHY_ASIC_STAT);
+}
+
+static void write_cr(unsigned short data, unsigned short address)
+{
+	writel(address, SATA_PHY_ASIC_STAT);
+	wait_cr_ack();
+	writel((data | CR_CAP_DATA), SATA_PHY_ASIC_DATA);
+	wait_cr_ack();
+	writel(CR_WRITE_ENABLE, SATA_PHY_ASIC_DATA);
+	wait_cr_ack();
+	return;
+}
+
+void workaround5458(void)
+{
+	unsigned i;
+
+	for (i = 0; i < 2; i++) {
+		unsigned short rx_control = read_cr(0x201d + (i << 8));
+		rx_control &= ~(PH_GAIN_MASK | FR_GAIN_MASK);
+		rx_control |= PH_GAIN << PH_GAIN_OFFSET;
+		rx_control |= FR_GAIN << FR_GAIN_OFFSET;
+		write_cr(rx_control, 0x201d + (i << 8));
+	}
+}
+
 int ide_preinit(void)
 {
 	int num_disks_found = 0;
@@ -976,7 +1033,7 @@ int ide_preinit(void)
 	reset_block(SYS_CTRL_RST_SGDMA, 0);
 	udelay(100);
 	/* Apply the Synopsis SATA PHY workarounds */
-	EnableSATAPhy();
+	workaround5458();
 	udelay(10000);
 
 	/* disable and clear core interrupts */

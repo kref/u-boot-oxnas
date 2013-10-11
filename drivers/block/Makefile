@@ -40,7 +40,7 @@ COBJS-$(CONFIG_SATA_SIL) += sata_sil.o
 COBJS-$(CONFIG_IDE_SIL680) += sil680.o
 COBJS-$(CONFIG_SCSI_SYM53C8XX) += sym53c8xx.o
 COBJS-$(CONFIG_SYSTEMACE) += systemace.o
-COBJS-$(CONFIG_IDE_PLX) += plxsata_ide.o synopsis.o
+COBJS-$(CONFIG_IDE_PLX) += plxsata_ide.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
