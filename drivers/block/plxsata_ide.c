@@ -885,32 +885,24 @@ static void scr_write(int device, unsigned int sc_reg, u32 val)
 	}
 }
 extern void workaround5458(void);
-extern void EnableSATAPhy(void);
 
 #define PHY_LOOP_COUNT  25  /* Wait for upto 5 seconds for PHY to be found */
+#define LOS_AND_TX_LVL   0x2988
+#define TX_ATTEN         0x55629
+
 static int phy_reset(int device)
 {
 	int phy_status = 0;
 	int loops = 0;
 
-	workaround5458();
-	scr_write(device, (0x60 - SATA_STD_ASYNC_REGS_OFF) / 4, 0x2988);
-	scr_write(device, (0x70 - SATA_STD_ASYNC_REGS_OFF) / 4, 0x55629);
+	scr_write(device, (0x60 - SATA_STD_ASYNC_REGS_OFF) / 4, LOS_AND_TX_LVL);
+	scr_write(device, (0x70 - SATA_STD_ASYNC_REGS_OFF) / 4, TX_ATTEN);
 
-#ifdef FPGA
-	/* The FPGA thinks it can do 3G when infact only 1.5G is possible, so limit
-	 it to Gen-1 SATA (1.5G) */
+	/* limit it to Gen-1 SATA (1.5G) */
 	scr_write(device, SATA_SCR_CONTROL, 0x311); /* Issue phy wake & core reset */
 	scr_read(device, SATA_SCR_STATUS); /* Dummy read; flush */
 	udelay(1000);
 	scr_write(device, SATA_SCR_CONTROL, 0x310); /* Issue phy wake & clear core reset */
-#else
-	udelay(50);
-	scr_write(device, SATA_SCR_CONTROL, 0x301); /* Issue phy wake & core reset */
-	scr_read(device, SATA_SCR_STATUS); /* Dummy read; flush */
-	udelay(1000);
-	scr_write(device, SATA_SCR_CONTROL, 0x300); /* Issue phy wake & clear core reset */
-#endif
 
 	/* Wait for upto 5 seconds for PHY to become ready */
 	do {
@@ -960,6 +952,7 @@ static int wait_FIS(int device)
 #define FR_GAIN_OFFSET  8
 #define PH_GAIN_MASK  (0x3 << PH_GAIN_OFFSET)
 #define FR_GAIN_MASK  (0x3 << FR_GAIN_OFFSET)
+#define USE_INT_SETTING  (1<<5)
 
 #define CR_READ_ENABLE  (1<<16)
 #define CR_WRITE_ENABLE (1<<17)
@@ -1000,6 +993,7 @@ void workaround5458(void)
 		rx_control &= ~(PH_GAIN_MASK | FR_GAIN_MASK);
 		rx_control |= PH_GAIN << PH_GAIN_OFFSET;
 		rx_control |= FR_GAIN << FR_GAIN_OFFSET;
+		rx_control |= USE_INT_SETTING;
 		write_cr(rx_control, 0x201d + (i << 8));
 	}
 }
