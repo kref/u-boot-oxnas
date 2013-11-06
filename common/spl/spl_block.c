@@ -117,7 +117,7 @@ void *memalign(size_t alignment, size_t bytes)
 {
 	ulong mem = next_mem;
 
-	mem += alignment;
+	mem += alignment - 1;
 	mem &= ~alignment;
 	next_mem = mem + bytes;
 
