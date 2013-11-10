@@ -810,6 +810,63 @@ void ide_output_data(int device, const ulong *sect_buf, int words)
 	}
 }
 
+
+#define SATA_DM_DBG1			(SATA_HOST_REGS_BASE + 0)
+#define SATA_DATACOUNT_PORT0		(SATA_HOST_REGS_BASE + 0x10)
+#define SATA_DATACOUNT_PORT1		(SATA_HOST_REGS_BASE + 0x14)
+#define SATA_DATA_MUX_RAM0		(SATA_HOST_REGS_BASE + 0x8000)
+#define SATA_DATA_MUX_RAM1		(SATA_HOST_REGS_BASE + 0xA000)
+/* Sata core debug1 register bits */
+#define SATA_CORE_PORT0_DATA_DIR_BIT	20
+#define SATA_CORE_PORT1_DATA_DIR_BIT	21
+#define SATA_CORE_PORT0_DATA_DIR	(1 << SATA_CORE_PORT0_DATA_DIR_BIT)
+#define SATA_CORE_PORT1_DATA_DIR	(1 << SATA_CORE_PORT1_DATA_DIR_BIT)
+
+/**
+ * Ref bug-6320
+ *
+ * This code is a work around for a DMA hardware bug that will repeat the
+ * penultimate 8-bytes on some reads. This code will check that the amount
+ * of data transferred is a multiple of 512 bytes, if not the in it will
+ * fetch the correct data from a buffer in the SATA core and copy it into
+ * memory.
+ *
+ */
+static void sata_bug_6320_workaround(int port, ulong *candidate)
+{
+	int is_read;
+	int quads_transferred;
+	int remainder;
+	int sector_quads_remaining;
+
+	/* Only want to apply fix to reads */
+	is_read = !(*((unsigned long*) SATA_DM_DBG1)
+		& (port ? SATA_CORE_PORT1_DATA_DIR : SATA_CORE_PORT0_DATA_DIR));
+
+	/* Check for an incomplete transfer, i.e. not a multiple of 512 bytes
+	 transferred (datacount_port register counts quads transferred) */
+	quads_transferred = *((unsigned long*) (
+		port ? SATA_DATACOUNT_PORT1 : SATA_DATACOUNT_PORT0));
+
+	remainder = quads_transferred & 0x7f;
+	sector_quads_remaining = remainder ? (0x80 - remainder) : 0;
+
+	if (is_read && (sector_quads_remaining == 2)) {
+		debug("SATA read fixup, only transfered %d quads, "
+			"sector_quads_remaining %d, port %d\n",
+			quads_transferred, sector_quads_remaining, port);
+
+		int total_len = ATA_SECT_SIZE;
+		ulong *sata_data_ptr = (void*) (
+			port ? SATA_DATA_MUX_RAM1 : SATA_DATA_MUX_RAM0)
+			+ ((total_len - 8) % 2048);
+
+		*candidate = *sata_data_ptr;
+		*(candidate + 1) = *(sata_data_ptr + 1);
+	}
+}
+
+
 void ide_input_data(int device, ulong *sect_buf, int words)
 {
 	/* Only permit accesses to disks found to be present during ide_preinit() */
@@ -837,6 +894,9 @@ void ide_input_data(int device, ulong *sect_buf, int words)
 		printf("Timed out of wait for DMA channel for SATA device %d to have in-progress clear\n",
 			device);
 	}
+
+	if (words == ATA_SECTORWORDS)
+		sata_bug_6320_workaround(device, sect_buf + words - 2);
 }
 
 static u32 scr_read(int device, unsigned int sc_reg)
