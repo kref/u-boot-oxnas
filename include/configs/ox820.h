@@ -139,7 +139,9 @@
 
 #define CONFIG_BLOCKDEV_FAT_BOOT_PARTITION		1 /* first partition */
 #define CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME		"u-boot.img" /* u-boot file name */
-/* spl kernel load is not enabled */
+/* enable U-Boot Falcon Mode */
+#define CONFIG_CMD_SPL
+#define CONFIG_SPL_OS_BOOT
 #define CONFIG_SPL_FAT_LOAD_ARGS_NAME			"bootargs.bin" /* boot parameters */
 #define CONFIG_SPL_FAT_LOAD_KERNEL_NAME			"uImage" /* kernel */
 #define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)

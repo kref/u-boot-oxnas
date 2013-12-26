@@ -113,6 +113,14 @@ void spl_block_device_init(void)
 }
 #endif
 
+#ifdef CONFIG_SPL_OS_BOOT
+int spl_start_uboot(void)
+{
+        /* break into full u-boot on 'c' */
+        return (serial_tstc() && serial_getc() == 'c');
+}
+#endif
+
 void spl_display_print(void)
 {
 	/* print a hint, so that we will not use the wrong SPL by mistake */

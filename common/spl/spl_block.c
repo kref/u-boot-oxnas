@@ -82,8 +82,6 @@ static int block_load_image_fat_os()
 	err = file_fat_read(CONFIG_SPL_FAT_LOAD_ARGS_NAME,
 			    (void *)CONFIG_SYS_SPL_ARGS_ADDR, 0);
 	if (err <= 0) {
-		printf("spl: error reading image %s, err - %d\n",
-		       CONFIG_SPL_FAT_LOAD_ARGS_NAME, err);
 		return -1;
 	}
 
@@ -105,9 +103,11 @@ void spl_block_load_image(void)
 #ifdef CONFIG_SPL_OS_BOOT
 	if (spl_start_uboot() || block_load_image_fat_os())
 #endif
-	err = block_load_image_fat(CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME);
-	if (err)
-		hang();
+	{
+		err = block_load_image_fat(CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME);
+		if (err)
+			hang();
+	}
 }
 
 /* quick and dirty memory allocation */
@@ -194,9 +194,11 @@ void spl_block_load_image(void)
 #ifdef CONFIG_SPL_OS_BOOT
 	if (spl_start_uboot() || block_load_image_raw_os(device))
 #endif
-	err = block_load_image_raw(device,
-				 CONFIG_SYS_BLOCK_RAW_MODE_U_BOOT_SECTOR);
-	if (err)
-		hang();
+	{
+		err = block_load_image_raw(device,
+					 CONFIG_SYS_BLOCK_RAW_MODE_U_BOOT_SECTOR);
+		if (err)
+			hang();
+	}
 }
 #endif /* CONFIG_SPL_FAT_SUPPORT */
