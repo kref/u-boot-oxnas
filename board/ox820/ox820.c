@@ -65,19 +65,6 @@ void board_inithw(void)
 #endif	/* DEBUG */
 
 	timer_init();
-#ifdef DEBUG
-	/* udelay test */
-	for (i = 0; i < 4; i++) {
-		if ( i & 1)
-			debug_green_on();
-		else
-			debug_green_off();
-
-		udelay(500000);
-
-	}
-#endif	/* DEBUG */
-
 	uart_init();
 	preloader_console_init();
 
