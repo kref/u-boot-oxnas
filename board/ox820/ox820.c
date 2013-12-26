@@ -79,8 +79,8 @@ void board_inithw(void)
 	}
 #endif /* DEBUG */
 #ifdef CONFIG_SPL_BSS_DRAM_START
-	extern char __bss_dram_start;
-	extern char __bss_dram_end;
+	extern void __bss_dram_start;
+	extern void __bss_dram_end;
 	memset(&__bss_dram_start, 0, &__bss_dram_end - &__bss_dram_start);
 #endif
 }

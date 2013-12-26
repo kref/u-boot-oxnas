@@ -131,6 +131,7 @@
 
 #define CONFIG_SPL_FAT_SUPPORT
 #define CONFIG_SPL_BSS_DRAM_START			0x65000000
+#define CONFIG_SPL_BSS_DRAM_SIZE			0x01000000
 #define CONFIG_SPL_MALLOC_START				0x66000000
 #ifdef CONFIG_SPL_BUILD
 #define USE_DL_PREFIX	/* rename malloc free etc, so we can override them */
