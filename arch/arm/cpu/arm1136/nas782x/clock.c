@@ -49,7 +49,7 @@ const PLL_CONFIG C_PLL_CONFIG[] = {
 static void plla_configure(int outdiv, int refdiv, int fbdiv, int bwadj,
                            int sfreq, int sslope)
 {
-	reg_set_bit(SYS_CTRL_PLLA_CTRL0, PLL_BYPASS);
+	setbits_le32(SYS_CTRL_PLLA_CTRL0, PLL_BYPASS);
 	udelay(10);
 	reset_block(SYS_CTRL_RST_PLLA, 1);
 	udelay(10);
@@ -73,7 +73,7 @@ static void plla_configure(int outdiv, int refdiv, int fbdiv, int bwadj,
 	printf("  plla_ctrl2 : %08x\n", readl(SYS_CTRL_PLLA_CTRL2));
 	printf("  plla_ctrl3 : %08x\n", readl(SYS_CTRL_PLLA_CTRL3));
 
-	reg_clear_bit(SYS_CTRL_PLLA_CTRL0, PLL_BYPASS); // Take PLL out of bypass
+	clrbits_le32(SYS_CTRL_PLLA_CTRL0, PLL_BYPASS); // Take PLL out of bypass
 	puts("\nPLLA Set\n");
 }
 

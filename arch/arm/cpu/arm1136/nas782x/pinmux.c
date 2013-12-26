@@ -12,11 +12,11 @@ void pinmux_set(int bank, int pin, int func)
 	else
 		base = SEC_CONTROL_BASE;
 
-	reg_clear_bit(base + PINMUX_SECONDARY_SEL, BIT(pin));
-	reg_clear_bit(base + PINMUX_TERTIARY_SEL, BIT(pin));
-	reg_clear_bit(base + PINMUX_QUATERNARY_SEL, BIT(pin));
-	reg_clear_bit(base + PINMUX_DEBUG_SEL, BIT(pin));
-	reg_clear_bit(base + PINMUX_ALTERNATIVE_SEL, BIT(pin));
+	clrbits_le32(base + PINMUX_SECONDARY_SEL, BIT(pin));
+	clrbits_le32(base + PINMUX_TERTIARY_SEL, BIT(pin));
+	clrbits_le32(base + PINMUX_QUATERNARY_SEL, BIT(pin));
+	clrbits_le32(base + PINMUX_DEBUG_SEL, BIT(pin));
+	clrbits_le32(base + PINMUX_ALTERNATIVE_SEL, BIT(pin));
 
 	switch (func) {
 	case PINMUX_GPIO:
@@ -39,5 +39,5 @@ void pinmux_set(int bank, int pin, int func)
 		reg = base + PINMUX_ALTERNATIVE_SEL;
 		break;
 	}
-	reg_set_bit(reg, BIT(pin));
+	setbits_le32(reg, BIT(pin));
 }

@@ -14,22 +14,6 @@
 
 #define BIT(x)                  (1 << (x))
 
-static inline void reg_clear_bit(int reg, int mask)
-{
-	u32 value;
-	value = readl(reg);
-	value &= ~mask;
-	writel(value, reg);
-}
-
-static inline void reg_set_bit(int reg, int mask)
-{
-	u32 value;
-	value = readl(reg);
-	value |= mask;
-	writel(value, reg);
-}
-
 static inline void debug_green_on(void)
 {
 	writel(0x30000, 0x4410001C);
