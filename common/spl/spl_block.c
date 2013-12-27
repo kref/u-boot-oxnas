@@ -110,29 +110,6 @@ void spl_block_load_image(void)
 	}
 }
 
-/* quick and dirty memory allocation */
-static ulong next_mem = CONFIG_SPL_MALLOC_START;
-
-void *memalign(size_t alignment, size_t bytes)
-{
-	ulong mem = next_mem;
-
-	mem += alignment - 1;
-	mem &= ~alignment;
-	next_mem = mem + bytes;
-
-	if (next_mem > CONFIG_SYS_SDRAM_BASE + SDRAM_SIZE) {
-		printf("spl: out of memory\n");
-		hang();
-	}
-
-	return (void *)mem;
-}
-
-void free(void* mem)
-{
-}
-
 #else /* CONFIG_SPL_FAT_SUPPORT */
 static int block_load_image_raw(block_dev_desc_t * device, unsigned long sector)
 {

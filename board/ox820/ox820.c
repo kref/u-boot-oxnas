@@ -130,6 +130,32 @@ void spl_display_print(void)
 void lowlevel_init(void)
 {
 }
+
+#ifdef USE_DL_PREFIX
+/* quick and dirty memory allocation */
+static ulong next_mem = CONFIG_SPL_MALLOC_START;
+
+void *memalign(size_t alignment, size_t bytes)
+{
+	ulong mem = next_mem;
+
+	mem += alignment - 1;
+	mem &= ~alignment;
+	next_mem = mem + bytes;
+
+	if (next_mem > CONFIG_SYS_SDRAM_BASE + SDRAM_SIZE) {
+		printf("spl: out of memory\n");
+		hang();
+	}
+
+	return (void *)mem;
+}
+
+void free(void* mem)
+{
+}
+#endif
+
 #endif /* CONFIG_SPL_BUILD */
 
 int board_early_init_f(void)
