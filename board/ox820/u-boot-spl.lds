@@ -75,22 +75,19 @@ SECTIONS
 
 	_end = .;
 
-#ifdef CONFIG_SPL_BSS_DRAM_START
-	.bss.dram : {
-		__bss_dram_start = .;
-#ifdef CONFIG_SPL_FAT_SUPPORT
-		fs/fat/libfat.o(.bss*)
-#endif /* CONFIG_SPL_FAT_SUPPORT */
-		__bss_dram_end = .;
-	} > dram
-#endif /* CONFIG_SPL_BSS_DRAM_START */
-
-	.bss __rel_dyn_start (OVERLAY) : {
+	.bss.sram __rel_dyn_start (OVERLAY) : {
 		__bss_start = .;
-		*(.bss*)
+		*(.bss.stdio_devices)
+		*(.bss.serial_current)
 		 . = ALIGN(4);
 		__bss_end = .;
 	}
+
+	.bss : {
+		__bss_dram_start = .;
+		*(.bss*)
+		__bss_dram_end = .;
+	} > dram
 
 	/DISCARD/ : { *(.bss*) }
 	/DISCARD/ : { *(.dynsym) }
