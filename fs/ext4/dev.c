@@ -144,3 +144,32 @@ int ext4_read_superblock(char *buffer)
 	return ext4fs_devread(sect, off, SUPERBLOCK_SIZE,
 				buffer);
 }
+
+int ext4_register_device(block_dev_desc_t *dev_desc, int part_no)
+{
+	/*
+	 * can not alloc on stack, ext4fs_probe will take the pointer.
+	 */
+        static disk_partition_t info;
+
+        /* Read the partition table, if present */
+        if (get_partition_info(dev_desc, part_no, &info)) {
+                if (part_no != 0) {
+                        printf("** Partition %d not valid on device %d **\n",
+                                        part_no, dev_desc->dev);
+                        return -1;
+                }
+
+                info.start = 0;
+                info.size = dev_desc->lba;
+                info.blksz = dev_desc->blksz;
+                info.name[0] = 0;
+                info.type[0] = 0;
+                info.bootable = 0;
+#ifdef CONFIG_PARTITION_UUIDS
+                info.uuid[0] = 0;
+#endif
+        }
+
+        return ext4fs_probe(dev_desc, &info);
+}
