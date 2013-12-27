@@ -165,8 +165,10 @@
 /* boot */
 #define CONFIG_IDENT_STRING		" for OXNAS"
 #define CONFIG_MACH_TYPE		MACH_TYPE_OXNAS
+#ifndef CONFIG_SPL_BUILD
 /* Enable devicetree support */
 #define CONFIG_OF_LIBFDT
+#endif
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_INITRD_TAG
@@ -298,7 +300,9 @@
 #define CONFIG_FAT_WRITE
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_EXT4
+#ifndef CONFIG_SPL_BUILD
 #define CONFIG_CMD_EXT4_WRITE
+#endif
 
 #define CONFIG_CMD_ZIP
 #define CONFIG_CMD_UNZIP
