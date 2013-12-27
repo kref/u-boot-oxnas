@@ -144,7 +144,7 @@
 #define CONFIG_CMD_SPL
 #define CONFIG_SPL_OS_BOOT
 #define CONFIG_SPL_FAT_LOAD_ARGS_NAME			"bootargs.bin" /* boot parameters */
-#define CONFIG_SPL_FAT_LOAD_KERNEL_NAME			"uImage" /* kernel */
+#define CONFIG_SPL_FAT_LOAD_KERNEL_NAME			"falcon.img" /* kernel */
 #define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
 
 #elif CONFIG_BOOT_FROM_EXT4
@@ -156,7 +156,7 @@
 #define CONFIG_CMD_SPL
 #define CONFIG_SPL_OS_BOOT
 #define CONFIG_SPL_EXT4_LOAD_ARGS_NAME			"/boot/bootargs.bin" /* boot parameters */
-#define CONFIG_SPL_EXT4_LOAD_KERNEL_NAME		"/boot/uImage" /* kernel */
+#define CONFIG_SPL_EXT4_LOAD_KERNEL_NAME		"/boot/falcon.img" /* kernel */
 #define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
 
 #else /* u-boot in raw sectors */
