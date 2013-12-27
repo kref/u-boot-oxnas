@@ -14,6 +14,12 @@
 
 #define BIT(x)                  (1 << (x))
 
+/* fix "implicit declaration of function" warnning */
+void *memalign(size_t alignment, size_t bytes);
+void free(void* mem);
+void *malloc(size_t bytes);
+void *calloc(size_t n, size_t elem_size);
+
 #endif /* __ASSEMBLY__ */
 #endif /* __KERNEL_STRICT_NAMES */
 
