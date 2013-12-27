@@ -28,6 +28,7 @@
 #include <version.h>
 #include <part.h>
 #include <fat.h>
+#include <ext4fs.h>
 
 /* should be implemented by board */
 extern void spl_block_device_init(void);
@@ -75,7 +76,7 @@ end:
 }
 
 #ifdef CONFIG_SPL_OS_BOOT
-static int block_load_image_fat_os()
+static int block_load_image_fat_os(void)
 {
 	int err;
 
@@ -109,8 +110,67 @@ void spl_block_load_image(void)
 			hang();
 	}
 }
+#elif defined(CONFIG_SPL_EXT4_SUPPORT) /* end CONFIG_SPL_FAT_SUPPORT */
+static int block_load_image_ext4(const char *filename)
+{
+	int err;
+	struct image_header *header;
 
-#else /* CONFIG_SPL_FAT_SUPPORT */
+	header = (struct image_header *)(CONFIG_SYS_TEXT_BASE -
+						sizeof(struct image_header));
+
+	err = ext4_read_file(filename, header, 0, sizeof(struct image_header));
+	if (err <= 0)
+		goto end;
+
+	spl_parse_image_header(header);
+
+	err = ext4_read_file(filename, (u8 *)spl_image.load_addr, 0, 0);
+
+end:
+	if (err <= 0)
+		printf("spl: error reading image %s, err - %d\n",
+		       filename, err);
+
+	return (err <= 0);
+}
+
+#ifdef CONFIG_SPL_OS_BOOT
+static int block_load_image_ext4_os(void)
+{
+	int err;
+
+	err = ext4_read_file(CONFIG_SPL_EXT4_LOAD_ARGS_NAME,
+			    (void *)CONFIG_SYS_SPL_ARGS_ADDR, 0, 0);
+	if (err <= 0) {
+		return -1;
+	}
+
+	return block_load_image_ext4(CONFIG_SPL_EXT4_LOAD_KERNEL_NAME);
+}
+#endif
+
+void spl_block_load_image(void)
+{
+	int err;
+	block_dev_desc_t * device;
+
+	device = spl_get_block_device();
+	err = ext4_register_device(device, CONFIG_BLOCKDEV_EXT4_BOOT_PARTITION);
+	if (err) {
+		printf("spl: ext4 register err - %d\n", err);
+		hang();
+	}
+#ifdef CONFIG_SPL_OS_BOOT
+	if (spl_start_uboot() || block_load_image_ext4_os())
+#endif
+	{
+		err = block_load_image_ext4(CONFIG_SPL_EXT4_LOAD_PAYLOAD_NAME);
+		if (err)
+			hang();
+	}
+}
+#else /* end CONFIG_SPL_EXT4_SUPPORT */
 static int block_load_image_raw(block_dev_desc_t * device, unsigned long sector)
 {
 	int n;

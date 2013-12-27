@@ -77,6 +77,10 @@
 #define CONFIG_ETHADDR			00:25:31:01:66:5F
 
 /* spl */
+#ifdef CONFIG_SPL_BUILD
+#define USE_DL_PREFIX	/* rename malloc free etc, so we can override them */
+#endif
+
 #if defined(CONFIG_BOOT_FROM_NAND) || defined(CONFIG_BOOT_FROM_SATA)
 #define CONFIG_SPL
 #define CONFIG_SPL_FRAMEWORK
@@ -133,9 +137,6 @@
 #ifdef CONFIG_BOOT_FROM_FAT /* u-boot in fat partition */
 
 #define CONFIG_SPL_FAT_SUPPORT
-#ifdef CONFIG_SPL_BUILD
-#define USE_DL_PREFIX	/* rename malloc free etc, so we can override them */
-#endif
 
 #define CONFIG_BLOCKDEV_FAT_BOOT_PARTITION		1 /* first partition */
 #define CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME		"u-boot.img" /* u-boot file name */
@@ -144,6 +145,18 @@
 #define CONFIG_SPL_OS_BOOT
 #define CONFIG_SPL_FAT_LOAD_ARGS_NAME			"bootargs.bin" /* boot parameters */
 #define CONFIG_SPL_FAT_LOAD_KERNEL_NAME			"uImage" /* kernel */
+#define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
+
+#elif CONFIG_BOOT_FROM_EXT4
+
+#define CONFIG_SPL_EXT4_SUPPORT
+#define CONFIG_BLOCKDEV_EXT4_BOOT_PARTITION		1 /* first partition */
+#define CONFIG_SPL_EXT4_LOAD_PAYLOAD_NAME		"/boot/u-boot.img" /* u-boot file name */
+/* enable U-Boot Falcon Mode */
+#define CONFIG_CMD_SPL
+#define CONFIG_SPL_OS_BOOT
+#define CONFIG_SPL_EXT4_LOAD_ARGS_NAME			"/boot/bootargs.bin" /* boot parameters */
+#define CONFIG_SPL_EXT4_LOAD_KERNEL_NAME		"/boot/uImage" /* kernel */
 #define CONFIG_SYS_SPL_ARGS_ADDR			(CONFIG_SYS_SDRAM_BASE + 0x100)
 
 #else /* u-boot in raw sectors */
@@ -228,6 +241,15 @@
 /* CONFIG_BOOT_FROM_NAND end */
 
 #elif defined(CONFIG_BOOT_FROM_SATA)
+#ifdef CONFIG_BOOT_FROM_EXT4
+#define CONFIG_ENV_IS_IN_EXT4
+#define CONFIG_START_IDE
+#define EXT4_ENV_INTERFACE 		"ide"
+#define EXT4_ENV_DEVICE			0
+#define EXT4_ENV_PART			1
+#define EXT4_ENV_FILE			"/boot/u-boot.env"
+#define CONFIG_ENV_SIZE			(16 * 1024)
+#else
 #define CONFIG_ENV_IS_IN_FAT
 #define CONFIG_START_IDE
 #define FAT_ENV_INTERFACE 		"ide"
@@ -235,6 +257,7 @@
 #define FAT_ENV_PART			1
 #define FAT_ENV_FILE			"u-boot.env"
 #define CONFIG_ENV_SIZE			(16 * 1024)
+#endif
 /* CONFIG_BOOT_FROM_SATA end */
 
 #else
