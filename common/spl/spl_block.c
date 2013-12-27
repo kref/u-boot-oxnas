@@ -128,10 +128,6 @@ static int block_load_image_ext4(const char *filename)
 	err = ext4_read_file(filename, (u8 *)spl_image.load_addr, 0, 0);
 
 end:
-	if (err <= 0)
-		printf("spl: error reading image %s, err - %d\n",
-		       filename, err);
-
 	return (err <= 0);
 }
 
@@ -158,7 +154,6 @@ void spl_block_load_image(void)
 	device = spl_get_block_device();
 	err = ext4_register_device(device, CONFIG_BLOCKDEV_EXT4_BOOT_PARTITION);
 	if (err) {
-		printf("spl: ext4 register err - %d\n", err);
 		hang();
 	}
 #ifdef CONFIG_SPL_OS_BOOT
