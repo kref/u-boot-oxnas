@@ -137,10 +137,8 @@ static ulong next_mem = CONFIG_SPL_MALLOC_START;
 
 void *memalign(size_t alignment, size_t bytes)
 {
-	ulong mem = next_mem;
+	ulong mem = ALIGN(next_mem, alignment);
 
-	mem += alignment - 1;
-	mem &= ~alignment;
 	next_mem = mem + bytes;
 
 	if (next_mem > CONFIG_SYS_SDRAM_BASE + SDRAM_SIZE) {
