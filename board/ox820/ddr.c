@@ -77,8 +77,8 @@ static const T_DDR_TIMING_PARAMETERS C_TP_DDR2_25_CL6_1GB = { 4, 5, 0, 2, 4, 4,
 //static const T_DDR_CONFIG_PARAMETERS C_CP_DDR2_25E_CL5  = { 2,16, 1, 0, 1, 32,25,0x80200A53}; // 64 MByte
 static const T_DDR_CONFIG_PARAMETERS C_CP_DDR2_25E_CL5 = { 2, 16, 1, 1, 1, 64,
 	25, 0x80200A53 }; // 128 MByte
-static const T_DDR_CONFIG_PARAMETERS C_CP_DDR2_25_CL6 = { 2, 16, 1, 1, 1, 64,
-	25, 0x80200A63 }; // 128 MByte
+static const T_DDR_CONFIG_PARAMETERS C_CP_DDR2_25_CL6 = { 2, 16, 1, 1, 1, 128,
+	25, 0x80200A63 }; // 256 MByte
 
 static void ddr_phy_poll_until_locked(void)
 {

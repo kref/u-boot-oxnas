@@ -141,7 +141,7 @@ void *memalign(size_t alignment, size_t bytes)
 
 	next_mem = mem + bytes;
 
-	if (next_mem > CONFIG_SYS_SDRAM_BASE + SDRAM_SIZE) {
+	if (next_mem > CONFIG_SYS_SDRAM_BASE + CONFIG_MIN_SDRAM_SIZE) {
 		printf("spl: out of memory\n");
 		hang();
 	}
@@ -290,9 +290,55 @@ int board_init(void)
 	return 0;
 }
 
+/* copied from board/evb64260/sdram_init.c */
+/*
+ * Check memory range for valid RAM. A simple memory test determines
+ * the actually available RAM size between addresses `base' and
+ * `base + maxsize'. Some (not all) hardware errors are detected:
+ * - short between address lines
+ * - short between data lines
+ */
+static long int dram_size (long int *base, long int maxsize)
+{
+	volatile long int *addr, *b = base;
+	long int cnt, val, save1, save2;
+
+#define STARTVAL (CONFIG_MIN_SDRAM_SIZE / 2)	/* start test at half size */
+	for (cnt = STARTVAL / sizeof (long); cnt < maxsize / sizeof (long);
+	     cnt <<= 1) {
+		addr = base + cnt;	/* pointer arith! */
+
+		save1 = *addr;	/* save contents of addr */
+		save2 = *b;	/* save contents of base */
+
+		*addr = cnt;	/* write cnt to addr */
+		*b = 0;		/* put null at base */
+
+		/* check at base address */
+		if ((*b) != 0) {
+			*addr = save1;	/* restore *addr */
+			*b = save2;	/* restore *b */
+			return (0);
+		}
+		val = *addr;	/* read *addr */
+
+		*addr = save1;
+		*b = save2;
+
+		if (val != cnt) {
+			/* fix boundary condition.. STARTVAL means zero */
+			if (cnt == STARTVAL / sizeof (long))
+				cnt = 0;
+			return (cnt * sizeof (long));
+		}
+	}
+	return maxsize;
+}
+
 int dram_init(void)
 {
-	gd->ram_size = SDRAM_SIZE;
+	gd->ram_size = dram_size((long int *)CONFIG_SYS_SDRAM_BASE,
+					CONFIG_MAX_SDRAM_SIZE);
 	return 0;
 }
 
