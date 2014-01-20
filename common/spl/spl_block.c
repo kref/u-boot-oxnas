@@ -166,7 +166,7 @@ void spl_block_load_image(void)
 	}
 }
 #else /* end CONFIG_SPL_EXT4_SUPPORT */
-static int block_load_image_raw(block_dev_desc_t * device, unsigned long sector)
+static int block_load_image_raw(block_dev_desc_t * device, lbaint_t sector)
 {
 	int n;
 	u32 image_size_sectors;
