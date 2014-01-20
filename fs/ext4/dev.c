@@ -43,6 +43,12 @@ void ext4fs_set_blk_dev(block_dev_desc_t *rbdd, disk_partition_t *info)
 	part_offset = info->start;
 	get_fs()->total_sect = ((uint64_t)info->size * info->blksz) >>
 		get_fs()->dev_desc->log2blksz;
+#ifdef CONFIG_EXT4_WRITE
+	if (get_fs()->total_sect >= 0x100000000ULL) {
+		puts("write support for huge ext4 partition is broken\n");
+		hang();
+	}
+#endif
 }
 
 int ext4fs_devread(lbaint_t sector, int byte_offset, int byte_len, char *buf)
