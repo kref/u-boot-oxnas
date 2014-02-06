@@ -205,10 +205,6 @@
 #define CONFIG_IPADDR			192.168.0.100
 
 #define CONFIG_EXTRA_ENV_SETTINGS	\
-	"updboot=" \
-				"bootp;" \
-				"tftp 60000000 u-boot.img;" \
-				"ide write 60000000 400 400\0" \
 	"console=" CONFIG_DEFAULT_CONSOLE \
 	"bootargs=" CONFIG_DEFAULT_CONSOLE \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
