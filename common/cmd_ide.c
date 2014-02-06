@@ -85,6 +85,7 @@ static ulong atapi_read(int device, ulong blknr, lbaint_t blkcnt,
 
 
 /* ------------------------------------------------------------------------- */
+#ifndef CONFIG_SPL_BUILD
 
 int do_ide(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
@@ -251,6 +252,7 @@ int do_diskboot(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	return common_diskboot(cmdtp, "ide", argc, argv);
 }
 
+#endif
 /* ------------------------------------------------------------------------- */
 
 void __ide_led(uchar led, uchar status)
@@ -442,13 +444,19 @@ void ide_init(void)
 			LOG2_INVALID(typeof(ide_dev_desc[i].log2blksz));
 		ide_dev_desc[i].lba = 0;
 		ide_dev_desc[i].block_read = ide_read;
+#ifndef CONFIG_SPL_BUILD
 		ide_dev_desc[i].block_write = ide_write;
+#endif
 		if (!ide_bus_ok[IDE_BUS(i)])
 			continue;
 		ide_led(led, 1);	/* LED on       */
 		ide_ident(&ide_dev_desc[i]);
 		ide_led(led, 0);	/* LED off      */
+#ifdef CONFIG_SPL_BUILD
+		putc('\n');
+#else
 		dev_print(&ide_dev_desc[i]);
+#endif
 
 		if ((ide_dev_desc[i].lba > 0) && (ide_dev_desc[i].blksz > 0)) {
 			/* initialize partition type */
@@ -935,6 +943,7 @@ IDE_READ_E:
 }
 
 /* ------------------------------------------------------------------------- */
+#ifndef CONFIG_SPL_BUILD
 
 
 ulong ide_write(int device, lbaint_t blknr, lbaint_t blkcnt, const void *buffer)
@@ -1021,6 +1030,7 @@ WR_OUT:
 	return (n);
 }
 
+#endif
 /* ------------------------------------------------------------------------- */
 
 /*
@@ -1543,6 +1553,7 @@ ulong atapi_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
 
 #endif /* CONFIG_ATAPI */
 
+#ifndef CONFIG_SPL_BUILD
 U_BOOT_CMD(ide, 5, 1, do_ide,
 	   "IDE sub-system",
 	   "reset - reset IDE controller\n"
@@ -1556,3 +1567,4 @@ U_BOOT_CMD(ide, 5, 1, do_ide,
 
 U_BOOT_CMD(diskboot, 3, 1, do_diskboot,
 	   "boot from IDE device", "loadAddr dev:part");
+#endif
