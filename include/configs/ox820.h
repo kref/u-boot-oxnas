@@ -78,9 +78,6 @@
 #define CONFIG_ETHADDR			00:25:31:01:66:5F
 
 /* spl */
-#ifdef CONFIG_SPL_BUILD
-#define USE_DL_PREFIX	/* rename malloc free etc, so we can override them */
-#endif
 
 #if defined(CONFIG_BOOT_FROM_NAND) || defined(CONFIG_BOOT_FROM_SATA)
 #define CONFIG_SPL
@@ -96,7 +93,12 @@
 #define CONFIG_SPL_MALLOC_START				0x66000000
 #endif
 
+#ifdef CONFIG_SPL_BUILD
+#define USE_DL_PREFIX	/* rename malloc free etc, so we can override them */
+#define DYNAMIC_CRC_TABLE /* save a few bytes */
+
 #if defined(CONFIG_BOOT_FROM_NAND)
+#define CONFIG_CMD_NAND
 #define CONFIG_SPL_NAND_SUPPORT
 #define BOOT_DEVICE_TYPE			"NAND"
 #define BOOT_DEVICE_NAND			0xfeedbacc
@@ -126,19 +128,21 @@
 /* CONFIG_BOOT_FROM_NAND end */
 
 #elif defined(CONFIG_BOOT_FROM_SATA)
+
+#define CONFIG_CMD_IDE
 #define CONFIG_SPL_BLOCK_SUPPORT
 #define BOOT_DEVICE_TYPE				"SATA"
 #define BOOT_DEVICE_BLOCK				860202
 #define CONFIG_SPL_BOOT_DEVICE				BOOT_DEVICE_BLOCK
-#define CONFIG_SPL_MAX_SIZE				(36 * 1024)
+#define CONFIG_SPL_MAX_SIZE				(32 * 1024)
 #define CONFIG_SPL_LIBDISK_SUPPORT
 #define CONFIG_SPL_BLOCKDEV_INTERFACE			"ide"
 #define CONFIG_SPL_BLOCKDEV_ID				0
 
 #ifdef CONFIG_BOOT_FROM_FAT /* u-boot in fat partition */
 
+#define CONFIG_FS_FAT
 #define CONFIG_SPL_FAT_SUPPORT
-
 #define CONFIG_BLOCKDEV_FAT_BOOT_PARTITION		1 /* first partition */
 #define CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME		"u-boot.img" /* u-boot file name */
 /* enable U-Boot Falcon Mode */
@@ -150,6 +154,7 @@
 
 #elif CONFIG_BOOT_FROM_EXT4
 
+#define CONFIG_FS_EXT4
 #define CONFIG_SPL_EXT4_SUPPORT
 #define CONFIG_BLOCKDEV_EXT4_BOOT_PARTITION		1 /* first partition */
 #define CONFIG_SPL_EXT4_LOAD_PAYLOAD_NAME		"/boot/u-boot.img" /* u-boot file name */
@@ -175,6 +180,7 @@
 #else
 /* generic, no spl support */
 #endif
+#endif /* CONFIG_SPL_BUILD */
 
 /* boot */
 #define CONFIG_IDENT_STRING		" for OXNAS"
@@ -288,13 +294,14 @@
 /* #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x3F */
 #define CONFIG_USB_PLLB_CLK
 #define CONFIG_USB_EHCI_OXNAS
-#ifndef CONFIG_SPL_BUILD
-#define CONFIG_USB_STORAGE
-#endif
-#define CONFIG_CMD_USB
 
 /* cmds */
 #define CONFIG_SYS_NO_FLASH
+
+#define CONFIG_DOS_PARTITION
+#define CONFIG_EFI_PARTITION
+
+#ifndef CONFIG_SPL_BUILD /* !CONFIG_SPL_BUILD */
 #include <config_cmd_default.h>
 
 #define CONFIG_CMD_SAVEENV
@@ -313,14 +320,15 @@
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_UBIFS
 
+#define CONFIG_USB_STORAGE
+#define CONFIG_CMD_USB
+
 #define CONFIG_CMD_IDE
 #define CONFIG_CMD_FAT
 #define CONFIG_FAT_WRITE
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_EXT4
-#ifndef CONFIG_SPL_BUILD
 #define CONFIG_CMD_EXT4_WRITE
-#endif
 
 #define CONFIG_CMD_ZIP
 #define CONFIG_CMD_UNZIP
@@ -333,9 +341,6 @@
 #define CONFIG_CMD_GETTIME
 #define CONFIG_CMD_BOOTMENU
 #define CONFIG_CMD_ELF
-
-#define CONFIG_DOS_PARTITION
-#define CONFIG_EFI_PARTITION
 
 /* for CONFIG_CMD_MTDPARTS */
 #define CONFIG_MTD_DEVICE
@@ -359,5 +364,6 @@
 #define CONFIG_REGEX
 /* for CONFIG_CMD_BOOTMENU & CONFIG_CMD_PXE */
 #define CONFIG_MENU
+#endif /* !CONFIG_SPL_BUILD */
 
 #endif	/* __CONFIG_H */
